@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Student Result System</title>
+
+<style>
+body { font-family: Arial; background:#eef; }
+
+.container {
+    width:85%; margin:auto; background:white;
+    padding:20px; border-radius:10px;
+}
+
+h2 {
+    text-align:center;
+    background:#4CAF50;
+    color:white;
+    padding:10px;
+    border-radius:8px;
+}
+
+h3 {
+    background:#2196F3;
+    color:white;
+    padding:8px;
+    border-radius:6px;
+}
+
+.topper-box {
+    background:gold;
+    padding:10px;
+    text-align:center;
+    border-radius:8px;
+    font-weight:bold;
+}
+
+/* Highlight for All Clear */
+.clear-row {
+    background: linear-gradient(90deg, #fff3cd, #ffeeba);
+    animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+    from { box-shadow: 0 0 5px gold; }
+    to { box-shadow: 0 0 20px orange; }
+}
+
+input, select {
+    width:100%;
+    margin:5px 0;
+    padding:8px;
+}
+
+button {
+    width:100%;
+    padding:10px;
+    background:green;
+    color:white;
+    border:none;
+    margin-top:5px;
+    border-radius:5px;
+}
+
+table {
+    width:100%;
+    margin-top:15px;
+    border-collapse:collapse;
+}
+
+th { background:#333; color:white; }
+
+th, td {
+    border:1px solid black;
+    padding:10px;
+    text-align:center;
+}
+
+.nav { display:flex; gap:10px; }
+.nav button { flex:1; background:#444; }
+
+.page { display:none; }
+.active { display:block; }
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="nav">
+<button onclick="showPage('p1')">Result</button>
+<button onclick="showPage('p2')">CGPA</button>
+</div>
+
+<!-- PAGE 1 -->
+<div id="p1" class="page active">
+
+<h2>Student Result System</h2>
+
+<input type="text" id="name" placeholder="Student Name">
+
+<select id="section">
+<option value="">Select Section</option>
+<option>A</option>
+<option>B</option>
+<option>C</option>
+</select>
+
+<h3>Enter Grades</h3>
+<div id="grades"></div>
+
+<button onclick="addStudent()">Add Student</button>
+<button onclick="generateRank()">Generate Rank</button>
+
+<h3>🏆 Overall Topper</h3>
+<div class="topper-box" id="topper">No Data</div>
+
+<h3>Section A</h3>
+<table id="A"></table>
+
+<h3>Section B</h3>
+<table id="B"></table>
+
+<h3>Section C</h3>
+<table id="C"></table>
+
+<h3>✅ All Clear Students</h3>
+<table id="clear"></table>
+
+<h3>❌ 1 Arrear</h3>
+<table id="a1"></table>
+
+<h3>❌ 2 Arrear</h3>
+<table id="a2"></table>
+
+<h3>❌ 3 Arrear</h3>
+<table id="a3"></table>
+
+<h3>❌ 4 Arrear</h3>
+<table id="a4"></table>
+
+<h3>❌ 5 Arrear</h3>
+<table id="a5"></table>
+
+<h3>❌ 6 Arrear</h3>
+<table id="a6"></table>
+
+</div>
+
+<!-- PAGE 2 -->
+<div id="p2" class="page">
+<h2>CGPA Calculator</h2>
+<div id="cg"></div>
+<button onclick="calcCGPA()">Calculate CGPA</button>
+<div class="topper-box" id="cgpa">0.00</div>
+</div>
+
+</div>
+
+<script>
+
+// Navigation
+function showPage(id){
+document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+}
+
+// Subjects
+let subjects=[
+{code:"C53452",credit:3},
+{code:"CS3491",credit:4},
+{code:"CS3492",credit:3},
+{code:"CS3401",credit:4},
+{code:"CS3451",credit:3},
+{code:"GE3451",credit:2},
+{code:"CS3461",credit:1.5},
+{code:"CS3481",credit:1.5}
+];
+
+// Grade inputs
+let gdiv=document.getElementById("grades");
+subjects.forEach((s,i)=>{
+gdiv.innerHTML+=`<label>${s.code}</label>
+<select id="g${i}">
+<option value="">Grade</option>
+<option>O</option><option>A+</option><option>A</option>
+<option>B+</option><option>B</option><option>RA</option>
+</select>`;
+});
+
+// Grade point
+function gradePoint(g){
+return {"O":10,"A+":9,"A":8,"B+":7,"B":6,"RA":0}[g]||0;
+}
+
+// Data
+let sections={A:[],B:[],C:[]};
+let category={clear:[],a1:[],a2:[],a3:[],a4:[],a5:[],a6:[]};
+
+// Add student
+function addStudent(){
+let name=document.getElementById("name").value;
+let sec=document.getElementById("section").value;
+
+let totalC=0,totalP=0;
+let arrears=0;
+let arrearSubjects=[];
+
+for(let i=0;i<subjects.length;i++){
+let g=document.getElementById("g"+i).value;
+let c=subjects[i].credit;
+
+if(g==="RA"){
+arrears++;
+arrearSubjects.push(subjects[i].code);
+}
+
+totalC+=c;
+totalP+=c*gradePoint(g);
+}
+
+let sgpa=totalP/totalC;
+sections[sec].push({name,sgpa});
+
+let data={name,sec,subjects:arrearSubjects};
+
+if(arrears===0) category.clear.push(data);
+if(arrears===1) category.a1.push(data);
+if(arrears===2) category.a2.push(data);
+if(arrears===3) category.a3.push(data);
+if(arrears===4) category.a4.push(data);
+if(arrears===5) category.a5.push(data);
+if(arrears>=6) category.a6.push(data);
+
+alert("SGPA: "+sgpa.toFixed(2));
+}
+
+// Generate rank
+function generateRank(){
+
+let all=[];
+
+["A","B","C"].forEach(sec=>{
+let list=sections[sec];
+list.sort((a,b)=>b.sgpa-a.sgpa);
+
+let t=document.getElementById(sec);
+t.innerHTML=`<tr><th>Rank</th><th>Name</th><th>SGPA</th></tr>`;
+
+list.forEach((s,i)=>{
+let r=t.insertRow();
+r.insertCell(0).innerText=i+1;
+r.insertCell(1).innerText=s.name;
+r.insertCell(2).innerText=s.sgpa.toFixed(2);
+all.push({...s,section:sec});
+});
+});
+
+// Topper
+if(all.length>0){
+let t=all.reduce((a,b)=>b.sgpa>a.sgpa?b:a);
+document.getElementById("topper").innerText =
+t.name+" (Sec "+t.section+") - "+t.sgpa.toFixed(2);
+}
+
+// Fill tables
+function fill(id,data,isClear=false){
+let tb=document.getElementById(id);
+tb.innerHTML="<tr><th>Name</th><th>Section</th><th>Arrear Subjects</th></tr>";
+
+data.forEach(s=>{
+let r=tb.insertRow();
+if(isClear) r.classList.add("clear-row");
+
+r.insertCell(0).innerText=s.name;
+r.insertCell(1).innerText=s.sec;
+r.insertCell(2).innerText = s.subjects.length>0 ? s.subjects.join(", ") : "None";
+});
+}
+
+fill("clear",category.clear,true);
+fill("a1",category.a1);
+fill("a2",category.a2);
+fill("a3",category.a3);
+fill("a4",category.a4);
+fill("a5",category.a5);
+fill("a6",category.a6);
+}
+
+// CGPA
+let cg=document.getElementById("cg");
+for(let i=1;i<=8;i++){
+cg.innerHTML+=`<label>Semester ${i}</label>
+<input type="number" id="s${i}">`;
+}
+
+function calcCGPA(){
+let t=0,c=0;
+for(let i=1;i<=8;i++){
+let v=parseFloat(document.getElementById("s"+i).value);
+if(!isNaN(v)){t+=v;c++;}
+}
+document.getElementById("cgpa").innerText=(t/c||0).toFixed(2);
+}
+
+</script>
+
+</body>
+</html>
